@@ -192,3 +192,202 @@ Install with:
 ```bash
 pip install transformers pandas tensorflow
 ```
+# Urdu Text Processing System Documentation
+
+## Overview
+
+This system provides a complete solution for processing Urdu text documents, including classification and summarization using pre-trained language models. The implementation handles Urdu text files stored in a specified directory structure and generates comprehensive output with classifications and summaries.
+
+## Features
+
+- **Text Classification**: Categorizes Urdu documents into predefined categories
+- **Text Summarization**: Generates concise summaries of Urdu documents
+- **Batch Processing**: Handles multiple files in directory structures
+- **Bilingual Output**: Provides results in both Urdu and English
+- **Error Handling**: Robust handling of various edge cases
+
+## System Requirements
+
+- Python 3.8+
+- Windows/Linux/macOS
+- 8GB+ RAM (16GB recommended for better performance)
+
+## Installation
+
+1. **Create a virtual environment** (recommended):
+
+```bash
+python -m venv urdu_env
+source urdu_env/bin/activate  # On Windows: urdu_env\Scripts\activate
+```
+
+2. **Install dependencies**:
+
+```bash
+pip install transformers torch pandas tqdm
+```
+
+For GPU acceleration (optional):
+
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+
+## Configuration
+
+Modify these parameters in the `UrduLLMProcessor` class initialization:
+
+```python
+self.articles_path = r'C:\a_llm\urdu_article\ncpul_articles_archive'  # Path to your Urdu documents
+self.output_file = 'urdu_llm_results.csv'  # Output filename
+self.CATEGORY_MAP = {  # Customize categories as needed
+    'کھیل': 'sports',
+    'سائنس': 'science',
+    # ... other categories
+}
+```
+
+## Usage
+
+### 1. Initialize the Processor
+
+```python
+processor = UrduLLMProcessor()
+```
+
+### 2. Load Models
+
+```python
+if not processor.initialize_models():
+    print("Failed to initialize models")
+    # Handle error
+```
+
+### 3. Process Files
+
+```python
+results = processor.process_files()
+```
+
+### 4. Save Results
+
+```python
+results.to_csv('output.csv', index=False, encoding='utf-8-sig')
+```
+
+## Class Documentation
+
+### `UrduLLMProcessor`
+
+Main class that handles Urdu text processing.
+
+#### Methods:
+
+- `initialize_models()`: Loads pre-trained models
+  - Returns: `True` if successful, `False` otherwise
+
+- `classify_text(text)`: Classifies Urdu text
+  - Parameters:
+    - `text`: Urdu text to classify
+  - Returns: Predicted category in Urdu
+
+- `summarize_text(text, max_length=130)`: Generates summary
+  - Parameters:
+    - `text`: Urdu text to summarize
+    - `max_length`: Maximum length of summary
+  - Returns: Generated summary text
+
+- `process_files()`: Processes all text files in configured directory
+  - Returns: Pandas DataFrame with results
+
+## Output Format
+
+The system generates a CSV file with these columns:
+
+| Column | Description |
+|--------|-------------|
+| `file_path` | Relative path to the source file |
+| `category_urdu` | Predicted category in Urdu |
+| `category_english` | Predicted category in English |
+| `summary` | Generated summary of the document |
+| `text_length` | Character count of original text |
+| `text_sample` | First 100 characters of the document |
+
+## Customization
+
+### Changing Models
+
+To use different pre-trained models, modify the `initialize_models()` method:
+
+```python
+self.classifier = pipeline(
+    "text-classification",
+    model="new-model-name",
+    device=-1
+)
+```
+
+### Adding Categories
+
+Update the `CATEGORY_MAP` dictionary:
+
+```python
+self.CATEGORY_MAP = {
+    'کھیل': 'sports',
+    'نئی_قسم': 'new_category',
+    # ... other categories
+}
+```
+
+### Adjusting Summary Length
+
+Change the `max_length` parameter in the `summarize_text()` call:
+
+```python
+summary = self.summarize_text(text, max_length=150)  # Longer summaries
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Model Loading Errors**:
+   - Ensure internet connection is active for first-time downloads
+   - Check Hugging Face model hub status
+
+2. **Memory Errors**:
+   - Reduce batch size in model configurations
+   - Use smaller models
+
+3. **Urdu Text Encoding**:
+   - Ensure files are UTF-8 encoded
+   - Verify proper rendering of Urdu characters
+
+### Error Messages
+
+| Error | Solution |
+|-------|----------|
+| "Directory not found" | Verify the `articles_path` exists |
+| "No files processed" | Check directory contains .txt files |
+| "Error loading models" | Try simpler models or check internet connection |
+
+## Performance Considerations
+
+- For large document collections (>1000 files), consider:
+  - Processing in batches
+  - Using GPU acceleration
+  - Increasing system memory
+
+- The system caches models after first use for faster subsequent runs
+
+## Example Output
+
+```csv
+file_path,category_urdu,category_english,summary,text_length,text_sample
+2024/06/کھیل_کرکٹ.txt,کھیل,sports,"پاکستان کرکٹ ٹیم نے میچ جیت لیا...",450,"پاکستان کرکٹ ٹیم نے آسٹریلیا کے خلاف..."
+2024/06/ٹیکنالوجی_موبائل.txt,ٹیکنالوجی,technology,"نئی موبائل ٹیکنالوجی نے مارکیٹ میں تہلکہ مچا دیا...",620,"جدید ترین موبائل ٹیکنالوجی کے..."
+```
+
+## License
+
+This system is open-source and available under the MIT License.
